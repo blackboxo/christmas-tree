@@ -28,13 +28,16 @@ export const GestureController: React.FC<GestureControllerProps> = ({ onModeChan
 
     const setupMediaPipe = async () => {
       try {
+        // Use jsDelivr CDN (accessible in China)
         const vision = await FilesetResolver.forVisionTasks(
           "https://cdn.jsdelivr.net/npm/@mediapipe/tasks-vision@0.10.3/wasm"
         );
 
+        // Use local model file to avoid loading from Google Storage (blocked in China)
+        // Model file should be downloaded using: npm run download-model or download-model.bat/.sh
         handLandmarker = await HandLandmarker.createFromOptions(vision, {
           baseOptions: {
-            modelAssetPath: `https://storage.googleapis.com/mediapipe-models/hand_landmarker/hand_landmarker/float16/1/hand_landmarker.task`,
+            modelAssetPath: `/models/hand_landmarker.task`,
             delegate: "GPU"
           },
           runningMode: "VIDEO",
@@ -44,7 +47,9 @@ export const GestureController: React.FC<GestureControllerProps> = ({ onModeChan
         startWebcam();
       } catch (error) {
         console.error("Error initializing MediaPipe:", error);
-        setGestureStatus("Camera Error");
+        console.warn("Gesture control is unavailable. The app will still work without it.");
+        setGestureStatus("Gesture control unavailable");
+        // Don't block the app if gesture control fails
       }
     };
 
